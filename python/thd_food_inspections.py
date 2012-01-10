@@ -3,6 +3,14 @@
 
 import sys
 from itertools import izip_longest
+
+RUNNING_IN_SCRAPERWIKI = False
+try:
+    import scraperwiki
+    RUNNING_IN_SCRAPERWIKI = True
+except ImportError:
+    pass
+
 import requests
 from pyquery import PyQuery as pq
 
@@ -57,6 +65,9 @@ def main(argv=None):
 
             print inspection
 
+            if RUNNING_IN_SCRAPERWIKI:
+                scraperwiki.sqlite.save(unique_keys=['name', 'date'],
+                                        data=inspection)
 
 if __name__ == "__main__":
     sys.exit(main())
