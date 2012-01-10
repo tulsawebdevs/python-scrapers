@@ -68,5 +68,8 @@ def main(argv=None):
                 scraperwiki.sqlite.save(unique_keys=['name', 'date'],
                                         data=inspection)
 
-if __name__ == "__main__":
-    sys.exit(main())
+if RUNNING_IN_SCRAPERWIKI:
+    main()
+else:
+    if __name__ == "__main__":
+        sys.exit(main())
