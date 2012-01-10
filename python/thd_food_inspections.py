@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 '''Scrape www.tulsa-health.org/food-safety/restaurant-inspections'''
 
 import sys
