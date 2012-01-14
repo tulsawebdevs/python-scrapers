@@ -1,6 +1,7 @@
 '''Scrape www.tulsa-health.org/food-safety/restaurant-inspections'''
-
+import re
 import sys
+import time
 from itertools import izip_longest
 
 RUNNING_IN_SCRAPERWIKI = False
@@ -21,7 +22,7 @@ SEARCH_DATA = {'startrow': 1,
                'startDate': '01-07-2011',
                'endDate': '01-07-2012',
                'establishmentClass': 'ANY',
-               'maxrows': 1,
+               'maxrows': 10,
                'filter': 'est',
                'Search': 'Search'}
 
@@ -52,8 +53,9 @@ def main(argv=None):
             # extract all the details
             inspection['facility_name'] = doc.find(
                 'div#inspectionDetail h3').text()
-            # TODO: regex the location from detail - Location: ... <br>
-            # detail = doc.find('div#inspectionDetail')
+            m = re.search('Location: (?P<location>.*)<br/>',
+                         doc.find('div#inspectionDetail').html())
+            inspection['location'] = m.group('location').strip()
             info = doc.find('div#inspectionInfo tr td')
             for (counter, pair) in enumerate(grouper(info, 2)):
                 value = pq(pair[1]).text()
@@ -67,6 +69,8 @@ def main(argv=None):
             if RUNNING_IN_SCRAPERWIKI:
                 scraperwiki.sqlite.save(unique_keys=['name', 'date'],
                                         data=inspection)
+
+            time.sleep(1)
 
 if RUNNING_IN_SCRAPERWIKI:
     main()

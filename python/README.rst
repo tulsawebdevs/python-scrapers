@@ -23,4 +23,3 @@ Create a virtualenv and install required libraries::
     python ./make_bootstrap.py
     python ./bootstrap.py
     source bin/activate
-    pip install -r requirements.txt
