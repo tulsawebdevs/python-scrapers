@@ -50,8 +50,7 @@ def main(argv=None):
             doc = pq(inspection_resp.content)
             inspection = {}
 
-            # extract all the details
-            inspection['facility_name'] = doc.find(
+            inspection['name'] = doc.find(
                 'div#inspectionDetail h3').text()
             m = re.search('Location: (?P<location>.*)<br/>',
                          doc.find('div#inspectionDetail').html())
