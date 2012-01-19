@@ -1,6 +1,7 @@
 # This is a pip requirement file.  See http://pypi.python.org/pypi/pip
 # Utility libraries for development
 pep8
+python-dateutil==1.5
 
 # We should stick to scraperwiki libraries as much as possible
 # https://scraperwiki.com/docs/python/python_libraries/

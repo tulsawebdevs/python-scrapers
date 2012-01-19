@@ -1,3 +1,5 @@
 .Python
-*.swp
-*.pyc
+bin
+lib
+include
+bootstrap.py
