@@ -1,4 +1,5 @@
 '''Scrape www.tulsa-health.org/food-safety/restaurant-inspections'''
+import dateutil.parser
 import re
 import sys
 import time
@@ -61,7 +62,8 @@ def scrape_inspections(startrow):
             for (counter, pair) in enumerate(grouper(info, 2)):
                 value = pq(pair[1]).text()
                 if counter == 0:
-                    inspection['date'] = value
+                    date = dateutil.parser.parse(value)
+                    inspection['date'] = date.date()
                 elif counter == 4:
                     inspection['result'] = value
 
