@@ -1,6 +1,8 @@
 '''Scrape www.tulsa-health.org/food-safety/restaurant-inspections'''
 import dateutil.parser
+import os
 import re
+import socket
 import sys
 import time
 from itertools import izip_longest
@@ -11,6 +13,21 @@ try:
     RUNNING_IN_SCRAPERWIKI = True
 except ImportError:
     pass
+
+STORING_TO_COUCHDB = False
+try:
+    import couchdb
+    from couchdb.mapping import Document, TextField, DateField
+    COUCHDB_URL = 'http://localhost:5984'
+    if 'CLOUDANT_URL' in os.environ:
+        COUCHDB_URL = os.environ['CLOUDANT_URL']
+    couch = couchdb.Server(COUCHDB_URL)
+    db = couch['thd_inspections']
+    STORING_TO_COUCHDB = True
+except ImportError:
+    print "could not import couchdb library"
+except socket.error:
+    print "could not connect to couchdb database"
 
 import requests
 from pyquery import PyQuery as pq
@@ -28,6 +45,14 @@ SEARCH_PARAMS = {'startrow': 1,
                'maxrows': PAGE_SIZE,
                'filter': 'est',
                'Search': 'Search'}
+
+
+if STORING_TO_COUCHDB:
+    class Inspection(Document):
+        name = TextField()
+        location = TextField()
+        result = TextField()
+        date = DateField()
 
 
 # http://stackoverflow.com/q/434287/571420
@@ -72,6 +97,10 @@ def scrape_inspections(startrow):
             if RUNNING_IN_SCRAPERWIKI:
                 scraperwiki.sqlite.save(unique_keys=['name', 'date'],
                                         data=inspection)
+
+            if STORING_TO_COUCHDB:
+                inspection_doc = Inspection(**inspection)
+                inspection_doc.store(db)
 
             time.sleep(SECONDS_THROTTLE)
 
