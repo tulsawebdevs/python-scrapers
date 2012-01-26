@@ -17,12 +17,14 @@ except ImportError:
 STORING_TO_COUCHDB = False
 try:
     import couchdb
-    from couchdb.mapping import Document, TextField, DateField
-    COUCHDB_URL = 'http://localhost:5984'
+    from maps.couch import Facility, Inspection
+    COUCHDB_URL = 'http://127.0.0.1:5984/'
     if 'CLOUDANT_URL' in os.environ:
         COUCHDB_URL = os.environ['CLOUDANT_URL']
     couch = couchdb.Server(COUCHDB_URL)
-    db = couch['thd_inspections']
+    facility_db = couch['thd_facilities']
+    inspection_db = couch['thd_inspections']
+    violations_db = couch['thd_violations']
     STORING_TO_COUCHDB = True
 except ImportError:
     print "could not import couchdb library"
@@ -47,14 +49,6 @@ SEARCH_PARAMS = {'startrow': 1,
                'Search': 'Search'}
 
 
-if STORING_TO_COUCHDB:
-    class Inspection(Document):
-        name = TextField()
-        location = TextField()
-        result = TextField()
-        date = DateField()
-
-
 # http://stackoverflow.com/q/434287/571420
 def grouper(iterable, n, fillvalue=None):
     args = [iter(iterable)] * n
@@ -68,31 +62,44 @@ def scrape_inspections(startrow):
     facility_links = pq(search_resp.content).find(
         'div#searchResults a.resultMore')
     for f_link in facility_links:
-        facility_href = pq(f_link).attr('href')
-        facility_resp = requests.get(THD_ROOT + '/' + facility_href)
+        facility = {}
+        facility['href'] = pq(f_link).attr('href')
+        facility['_id'] = facility['href']
+        facility_resp = requests.get(THD_ROOT + '/' + facility['href'])
         inspection_links = pq(facility_resp.content).find(
             'div#inspectionHistory a')
         for i_link in inspection_links:
-            inspection_href = pq(i_link).attr('href')
-            inspection_resp = requests.get(THD_ROOT + '/' + inspection_href)
-            doc = pq(inspection_resp.content)
             inspection = {}
-
-            inspection['name'] = doc.find(
+            inspection['facility'] = facility['_id']
+            inspection['href'] = pq(i_link).attr('href')
+            inspection['_id'] = inspection['href']
+            inspection_resp = requests.get(THD_ROOT + '/' + inspection['href'])
+            doc = pq(inspection_resp.content)
+            facility['name'] = doc.find(
                 'div#inspectionDetail h3').text()
             m = re.search('Location: (?P<location>.*)<br/>',
                          doc.find('div#inspectionDetail').html())
-            inspection['location'] = m.group('location').strip()
+            facility['location'] = m.group('location').strip()
+
+
             info = doc.find('div#inspectionInfo tr td')
             for (counter, pair) in enumerate(grouper(info, 2)):
                 value = pq(pair[1]).text()
                 if counter == 0:
                     date = dateutil.parser.parse(value)
                     inspection['date'] = date.date()
+                elif counter == 1:
+                    facility['type'] = value
+                elif counter == 2:
+                    inspection['priority'] = value
+                elif counter == 3:
+                    inspection['purpose'] = value
                 elif counter == 4:
                     inspection['result'] = value
+                elif counter == 5:
+                    inspection['actions'] = value
 
-            print inspection
+            print "inspection: %s" % inspection
 
             if RUNNING_IN_SCRAPERWIKI:
                 scraperwiki.sqlite.save(unique_keys=['name', 'date'],
@@ -100,9 +107,16 @@ def scrape_inspections(startrow):
 
             if STORING_TO_COUCHDB:
                 inspection_doc = Inspection(**inspection)
-                inspection_doc.store(db)
+                inspection_db.update([inspection_doc])
+                # inspection_doc.store(inspection_db)
 
             time.sleep(SECONDS_THROTTLE)
+
+        if STORING_TO_COUCHDB:
+            facility_doc = Facility(**facility)
+            facility_db.update([facility_doc])
+            # facility_doc.store(facility_db)
+        print "facility: %s" % facility
 
 
 def main(argv=None):
