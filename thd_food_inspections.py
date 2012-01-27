@@ -1,11 +1,16 @@
 '''Scrape www.tulsa-health.org/food-safety/restaurant-inspections'''
-import dateutil.parser
 import os
 import re
 import socket
 import sys
 import time
 from itertools import izip_longest
+
+import dateutil.parser
+from geopy import geocoders
+from pyquery import PyQuery as pq
+import requests
+
 
 RUNNING_IN_SCRAPERWIKI = False
 try:
@@ -31,8 +36,6 @@ except ImportError:
 except socket.error:
     print "could not connect to couchdb database"
 
-import requests
-from pyquery import PyQuery as pq
 
 THD_ROOT = 'http://tulsa.ok.gegov.com/tulsa'
 PAGE_SIZE = 20
@@ -80,7 +83,11 @@ def scrape_inspections(startrow):
             m = re.search('Location: (?P<location>.*)<br/>',
                          doc.find('div#inspectionDetail').html())
             facility['location'] = m.group('location').strip()
-
+            if 'MAPQUEST_API_KEY' in os.environ:
+                mq = geocoders.MapQuest(os.environ['MAPQUEST_API_KEY'])
+                (place, (lat, long)) = mq.geocode(facility['location'])
+                facility['latitude'] = lat
+                facility['longitude'] = long
 
             info = doc.find('div#inspectionInfo tr td')
             for (counter, pair) in enumerate(grouper(info, 2)):

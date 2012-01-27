@@ -1,11 +1,14 @@
 # This is a pip requirement file.  See http://pypi.python.org/pypi/pip
 # Utility libraries for development
 pep8
-python-dateutil==1.5
 
 # scraping libraries
 requests
 pyquery
+
+# parsing/transforming/services libraries
+python-dateutil==1.5
+-e git://github.com/groovecoder/geopy.git#egg=geopy
 
 # data storage libraries
 couchdb
