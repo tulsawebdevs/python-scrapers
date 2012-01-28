@@ -96,7 +96,7 @@ def scrape_inspections(startrow):
                 facility['latitude'] = lat
                 facility['longitude'] = long
             # IndexError when location can't be geocoded
-            except IndexError:
+            except:
                 pass
 
         couch.save_facility(facility)
