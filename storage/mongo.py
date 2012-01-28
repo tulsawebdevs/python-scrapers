@@ -4,13 +4,9 @@ import datetime
 from pymongo import Connection
 
 STORING_TO_MONGO = False
-if 'MONGO_SERVER' in os.environ:
+if 'MONGODB_URI' in os.environ:
     try:
-        MONGO_SERVER = os.environ['MONGO_SERVER']
-        MONGO_PORT = os.environ['MONGO_PORT']
-        MONGO_DB = os.environ['MONGO_DB']
-
-        mongo = Connection(MONGO_SERVER, int(MONGO_PORT))
+        mongo = Connection(os.environ['MONGODB_URI'])
         thd_db = mongo.thd
         facilities = thd_db.facilities
         inspections = thd_db.inspections
