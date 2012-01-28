@@ -7,9 +7,9 @@ STORING_TO_MONGO = False
 if 'MONGODB_URI' in os.environ:
     try:
         mongo = Connection(os.environ['MONGODB_URI'])
-        thd_db = mongo.thd
-        facilities = thd_db.facilities
-        inspections = thd_db.inspections
+        db = mongo.heroku_app2532900
+        facilities = db.facilities
+        inspections = db.inspections
         STORING_TO_MONGO = True
         print "Storing to mongo"
     except:
