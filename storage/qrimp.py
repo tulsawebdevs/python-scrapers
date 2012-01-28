@@ -22,28 +22,34 @@ if 'QRIMP_URL' in os.environ:
 
 def save_facility(facility, facility_id=None):
     if STORING_TO_QRIMP:
-        qrimpParams = QrimpParams()
-        qrimpParams.params.update({'t': 'facilities'})
-        if facility_id:
-            qrimpParams.params.update({'o':'3', 'id': facility_id})
-        facilities_url = QRIMP_URL + urlencode(qrimpParams.params)
-        full_url = facilities_url + '&' + urlencode(facility)
-        resp = requests.get(full_url)
-        if resp.status_code != 200:
-            print "ERROR: %s %s" % (resp.status_code, resp.content)
-        qrimpParams.params.update({'o':'5'})
-        facility_id = resp.content
-        return facility_id
+        try:
+            qrimpParams = QrimpParams()
+            qrimpParams.params.update({'t': 'facilities'})
+            if facility_id:
+                qrimpParams.params.update({'o':'3', 'id': facility_id})
+            facilities_url = QRIMP_URL + urlencode(qrimpParams.params)
+            full_url = facilities_url + '&' + urlencode(facility)
+            resp = requests.get(full_url)
+            if resp.status_code != 200:
+                print "ERROR: %s %s" % (resp.status_code, resp.content)
+            qrimpParams.params.update({'o':'5'})
+            facility_id = resp.content
+            return facility_id
+        except:
+            pass
 
 def save_inspection(inspection, facility_name, facility_id):
     if STORING_TO_QRIMP:
-        qrimpParams = QrimpParams()
-        qrimpParams.params.update({'t': 'inspections'})
-        inspections_url = QRIMP_URL + urlencode(qrimpParams.params)
-        inspection['facility'] = facility_id
-        inspection['name'] = facility_name
-        inspection['date'] = inspection['date'].strftime('%m/%d/%Y')
-        full_url = inspections_url + '&' + urlencode(inspection)
-        resp = requests.get(full_url)
-        if resp.status_code != 200:
-            print "ERROR: %s %s" % (resp.status_code, resp.content)
+        try:
+            qrimpParams = QrimpParams()
+            qrimpParams.params.update({'t': 'inspections'})
+            inspections_url = QRIMP_URL + urlencode(qrimpParams.params)
+            inspection['facility'] = facility_id
+            inspection['name'] = facility_name
+            inspection['date'] = inspection['date'].strftime('%m/%d/%Y')
+            full_url = inspections_url + '&' + urlencode(inspection)
+            resp = requests.get(full_url)
+            if resp.status_code != 200:
+                print "ERROR: %s %s" % (resp.status_code, resp.content)
+        except:
+            pass
