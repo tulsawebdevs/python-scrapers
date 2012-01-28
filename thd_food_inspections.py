@@ -1,7 +1,6 @@
 '''Scrape www.tulsa-health.org/food-safety/restaurant-inspections'''
 import os
 import re
-import socket
 import sys
 import time
 from itertools import izip_longest
@@ -11,31 +10,10 @@ from geopy import geocoders
 from pyquery import PyQuery as pq
 import requests
 
-
-RUNNING_IN_SCRAPERWIKI = False
-try:
-    import scraperwiki
-    RUNNING_IN_SCRAPERWIKI = True
-except ImportError:
-    pass
-
 STORING_TO_COUCHDB = False
-try:
-    import couchdb
-    from maps.couch import Facility, Inspection
-    COUCHDB_URL = 'http://127.0.0.1:5984/'
-    if 'CLOUDANT_URL' in os.environ:
-        COUCHDB_URL = os.environ['CLOUDANT_URL']
-    couch = couchdb.Server(COUCHDB_URL)
-    facility_db = couch['thd_facilities']
-    inspection_db = couch['thd_inspections']
-    violations_db = couch['thd_violations']
+if 'COUCHDB_URL' in os.environ:
+    from storage.couch import save_facility, save_inspection
     STORING_TO_COUCHDB = True
-except ImportError:
-    print "could not import couchdb library"
-except socket.error:
-    print "could not connect to couchdb database"
-
 
 THD_ROOT = 'http://tulsa.ok.gegov.com/tulsa'
 PAGE_SIZE = 20
@@ -83,11 +61,6 @@ def scrape_inspections(startrow):
             m = re.search('Location: (?P<location>.*)<br/>',
                          doc.find('div#inspectionDetail').html())
             facility['location'] = m.group('location').strip()
-            if 'MAPQUEST_API_KEY' in os.environ:
-                mq = geocoders.MapQuest(os.environ['MAPQUEST_API_KEY'])
-                (place, (lat, long)) = mq.geocode(facility['location'])
-                facility['latitude'] = lat
-                facility['longitude'] = long
 
             info = doc.find('div#inspectionInfo tr td')
             for (counter, pair) in enumerate(grouper(info, 2)):
@@ -108,21 +81,23 @@ def scrape_inspections(startrow):
 
             print "inspection: %s" % inspection
 
-            if RUNNING_IN_SCRAPERWIKI:
-                scraperwiki.sqlite.save(unique_keys=['name', 'date'],
-                                        data=inspection)
-
             if STORING_TO_COUCHDB:
-                inspection_doc = Inspection(**inspection)
-                inspection_db.update([inspection_doc])
-                # inspection_doc.store(inspection_db)
+                save_inspection(inspection)
 
             time.sleep(SECONDS_THROTTLE)
 
+        if 'MAPQUEST_API_KEY' in os.environ:
+            mq = geocoders.MapQuest(os.environ['MAPQUEST_API_KEY'])
+            try:
+                (place, (lat, long)) = mq.geocode(facility['location'])
+                facility['latitude'] = lat
+                facility['longitude'] = long
+            # IndexError when location can't be geocoded
+            except IndexError:
+                pass
+
         if STORING_TO_COUCHDB:
-            facility_doc = Facility(**facility)
-            facility_db.update([facility_doc])
-            # facility_doc.store(facility_db)
+            save_facility(facility)
         print "facility: %s" % facility
 
 
@@ -139,8 +114,5 @@ def main(argv=None):
         scrape_inspections(startrow)
 
 
-if RUNNING_IN_SCRAPERWIKI:
-    main()
-else:
-    if __name__ == "__main__":
-        sys.exit(main())
+if __name__ == "__main__":
+    sys.exit(main())

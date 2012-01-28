@@ -1,6 +1,8 @@
 .Python
 bin
 lib
+src
 include
 bootstrap.py
 *.pyc
+*.swp
