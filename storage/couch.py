@@ -12,6 +12,7 @@ if 'COUCHDB_URL' in os.environ:
         facility_db = couch['thd_facilities']
         inspection_db = couch['thd_inspections']
         STORING_TO_COUCHDB = True
+        print "Storing to couch"
     except socket.error:
         print "Could not connect to couchdb database"
 

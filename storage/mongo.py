@@ -11,6 +11,7 @@ if 'MONGODB_URI' in os.environ:
         facilities = thd_db.facilities
         inspections = thd_db.inspections
         STORING_TO_MONGO = True
+        print "Storing to mongo"
     except:
         print "Could not connect to mongo"
 
