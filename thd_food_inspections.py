@@ -10,10 +10,11 @@ from geopy import geocoders
 from pyquery import PyQuery as pq
 import requests
 
-STORING_TO_COUCHDB = False
-if 'COUCHDB_URL' in os.environ:
-    from storage.couch import save_facility, save_inspection
-    STORING_TO_COUCHDB = True
+from storage import couch, mongo
+
+STORING_TO_MONGO = False
+if 'MONGO_SERVER' in os.environ:
+    STORING_TO_MONGO = True
 
 THD_ROOT = 'http://tulsa.ok.gegov.com/tulsa'
 PAGE_SIZE = 20
@@ -81,8 +82,8 @@ def scrape_inspections(startrow):
 
             print "inspection: %s" % inspection
 
-            if STORING_TO_COUCHDB:
-                save_inspection(inspection)
+            couch.save_inspection(inspection)
+            mongo.save_inspection(inspection)
 
             time.sleep(SECONDS_THROTTLE)
 
@@ -96,8 +97,8 @@ def scrape_inspections(startrow):
             except IndexError:
                 pass
 
-        if STORING_TO_COUCHDB:
-            save_facility(facility)
+        couch.save_facility(facility)
+        mongo.save_facility(facility)
         print "facility: %s" % facility
 
 

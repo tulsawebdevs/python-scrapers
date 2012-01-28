@@ -12,3 +12,4 @@ python-dateutil==1.5
 
 # data storage libraries
 couchdb
+pymongo
