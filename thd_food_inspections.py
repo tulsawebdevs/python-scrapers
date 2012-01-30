@@ -10,7 +10,7 @@ from geopy import geocoders
 from pyquery import PyQuery as pq
 import requests
 
-from storage import couch, mongo, qrimp
+from storage import couch, mongo, csvfiles
 
 STORING_TO_MONGO = False
 if 'MONGO_SERVER' in os.environ:
@@ -47,7 +47,6 @@ def scrape_inspections(startrow):
         facility = {}
         facility['href'] = pq(f_link).attr('href')
         facility['_id'] = facility['href']
-        facility_id = qrimp.save_facility(facility)
         facility_resp = requests.get(THD_ROOT + '/' + facility['href'])
         inspection_links = pq(facility_resp.content).find(
             'div#inspectionHistory a')
@@ -85,7 +84,7 @@ def scrape_inspections(startrow):
 
             couch.save_inspection(inspection)
             mongo.save_inspection(inspection)
-            qrimp.save_inspection(inspection, facility['name'], facility_id)
+            csvfiles.save_inspection(inspection)
 
             time.sleep(SECONDS_THROTTLE)
 
@@ -101,7 +100,7 @@ def scrape_inspections(startrow):
 
         couch.save_facility(facility)
         mongo.save_facility(facility)
-        qrimp.save_facility(facility, facility_id)
+        csvfiles.save_facility(facility)
         print "facility: %s" % facility
 
 

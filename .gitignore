@@ -6,3 +6,4 @@ include
 bootstrap.py
 *.pyc
 *.swp
+*.csv
