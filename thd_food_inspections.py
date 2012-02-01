@@ -45,17 +45,17 @@ def scrape_inspections(startrow):
         'div#searchResults a.resultMore')
     for f_link in facility_links:
         facility = {}
-        facility['href'] = pq(f_link).attr('href')
-        facility['_id'] = facility['href']
-        facility_resp = requests.get(THD_ROOT + '/' + facility['href'])
+        facility['url'] = THD_ROOT + '/' + pq(f_link).attr('href')
+        facility['_id'] = facility['url']
+        facility_resp = requests.get(facility['url'])
         inspection_links = pq(facility_resp.content).find(
             'div#inspectionHistory a')
         for i_link in inspection_links:
             inspection = {}
             inspection['facility'] = facility['_id']
-            inspection['href'] = pq(i_link).attr('href')
-            inspection['_id'] = inspection['href']
-            inspection_resp = requests.get(THD_ROOT + '/' + inspection['href'])
+            inspection['url'] = THD_ROOT + '/' + pq(i_link).attr('href')
+            inspection['_id'] = inspection['url']
+            inspection_resp = requests.get(inspection['url'])
             doc = pq(inspection_resp.content)
             facility['name'] = doc.find(
                 'div#inspectionDetail h3').text()
