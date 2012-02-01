@@ -1,4 +1,5 @@
 '''Scrape www.tulsa-health.org/food-safety/restaurant-inspections'''
+import logging
 import os
 import re
 import sys
@@ -11,6 +12,9 @@ from pyquery import PyQuery as pq
 import requests
 
 from storage import save_facility, save_inspection
+
+logging.basicConfig(filename="scraping_errors.log")
+logger = logging.getLogger(__name__)
 
 THD_ROOT = 'http://tulsa.ok.gegov.com/tulsa'
 PAGE_SIZE = 20
@@ -88,9 +92,9 @@ def scrape_inspections(startrow):
                 (place, (lat, long)) = mq.geocode(facility['location'])
                 facility['latitude'] = lat
                 facility['longitude'] = long
-            # IndexError when location can't be geocoded
             except:
-                pass
+                logger.exception("Could not geocode location: %s"
+                                 % facility['location'])
 
         save_facility(facility)
         print "facility: %s" % facility

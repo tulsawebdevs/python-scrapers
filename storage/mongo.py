@@ -17,10 +17,10 @@ if 'MONGODB_URI' in os.environ:
 
 def save_facility(facility):
     if STORING_TO_MONGO:
-        facilities.insert(facility)
+        facilities.save(facility)
 
 def save_inspection(inspection):
     if STORING_TO_MONGO:
         inspection['date'] = datetime.datetime.combine(inspection['date'],
                                               datetime.time())
-        inspections.insert(inspection)
+        inspections.save(inspection)

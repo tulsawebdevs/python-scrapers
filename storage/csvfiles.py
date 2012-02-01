@@ -1,6 +1,9 @@
 import csv
+import logging
 import os
 
+logging.basicConfig(filename='errors.log')
+logger = logging.getLogger(__name__)
 
 STORING_TO_CSV = False
 if 'STORE_TO_CSV' in os.environ:
@@ -11,12 +14,21 @@ if 'STORE_TO_CSV' in os.environ:
     STORING_TO_CSV = True
     print "Storing to csv"
 
+
 def save_facility(facility):
     if STORING_TO_CSV:
-        facilities_writer.writerow(facility.values())
-        facilities_file.flush()
+        try:
+            facilities_writer.writerow(facility.values())
+            facilities_file.flush()
+        except:
+            logger.exception("Error writing facility: %s" % facility['_id'])
+
 
 def save_inspection(inspection):
     if STORING_TO_CSV:
-        inspections_writer.writerow(inspection.values())
-        inspections_file.flush()
+        try:
+            inspections_writer.writerow(inspection.values())
+            inspections_file.flush()
+        except:
+            logger.exception("Error writing inspection: %s"
+                             % inspection['_id'])
