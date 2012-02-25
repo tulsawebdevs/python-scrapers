@@ -23,3 +23,15 @@ Create a virtualenv and install required libraries::
     python ./make_bootstrap.py
     python ./bootstrap.py
     source bin/activate
+
+===
+Run
+===
+
+See scrapers' README
+
+=====
+Store
+=====
+
+See scrapers' README
