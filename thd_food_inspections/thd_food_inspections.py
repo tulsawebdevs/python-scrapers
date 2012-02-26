@@ -22,12 +22,12 @@ PAGE_SIZE = 20
 SECONDS_THROTTLE = 10
 
 SEARCH_PARAMS = {'startrow': 1,
+               'maxrows': PAGE_SIZE,
                'source': 'quick',
                'precision': 'LIKE',
                'startDate': '01-07-2011',
                'endDate': '01-07-2012',
                'establishmentClass': 'ANY',
-               'maxrows': PAGE_SIZE,
                'filter': 'est',
                'Search': 'Search'}
 

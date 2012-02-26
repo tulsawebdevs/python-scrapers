@@ -6,6 +6,20 @@ Activate virtualenv::
 
     source bin/activate
 
+Adjust settings as needed::
+
+    PAGE_SIZE = 20
+    SECONDS_THROTTLE = 10
+
+    SEARCH_PARAMS = {
+                   'startrow': 1,
+                   'maxrows': PAGE_SIZE,
+                   ...
+                   'startDate': '01-07-2011',
+                   'endDate': '01-07-2012',
+                   ...
+                   }
+    
 Run scraper::
 
     python thd_food_inspections/thd_food_inspections.py
@@ -24,5 +38,30 @@ Set environment variable::
 
     export STORE_TO_CSV=True
 
-Will write the data to 3 files: ``thd_facilities.csv``, ``thd_inspections.csv``
-, and ``thd_violations.csv``
+Will write the data to 3 files:: 
+
+    ``thd_facilities.csv``
+    ``thd_inspections.csv``
+    ``thd_violations.csv``
+
+CouchDB
+=======
+
+#. Install CouchDB_, or use Cloudant_.
+#. Set environment variable::
+
+    export COUCHDB_URL=https://user:pass@localhost
+
+.. _CouchDB: http://wiki.apache.org/couchdb/Installation
+.. _Cloudant: https://cloudant.com/
+
+MongoDB
+=======
+
+#. Install MongoDB_, or use mongolab_.
+#. Set environment variable::
+
+    export MONGODB_URI=mongodb://user:pass@localhost:29817/db
+
+.. _MongoDB: http://www.mongodb.org/
+.. _mongolab: https://mongolab.com/
