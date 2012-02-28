@@ -93,10 +93,11 @@ CouchDB
 MongoDB
 -------
 
-#. Install MongoDB_, or use mongolab_.
+#. Install MongoDB_, or use MongoHQ_ (run by a Tulsa expatriate!).
 #. Set environment variable::
 
-    export MONGODB_URI=mongodb://user:pass@localhost:29817/db
+    export MONGODB_URI=mongodb://user:pass@localhost:29817/database_name
+    export MONGODB_DATABASE=database_name
 
 .. _MongoDB: http://www.mongodb.org/
-.. _mongolab: https://mongolab.com/
+.. _MongoHQ: https://mongohq.com/
