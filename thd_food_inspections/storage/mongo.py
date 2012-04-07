@@ -7,7 +7,7 @@ STORING_TO_MONGO = False
 if 'MONGODB_URI' in os.environ:
     try:
         mongo = Connection(os.environ['MONGODB_URI'])
-        db = mongo.heroku_app2532900
+        db = mongo[os.environ['MONGODB_DATABASE']]
         facilities = db.facilities
         inspections = db.inspections
         violations = db.violations
@@ -19,16 +19,16 @@ if 'MONGODB_URI' in os.environ:
 
 def save_facility(facility):
     if STORING_TO_MONGO:
-        facilities.save(facility)
+        facilities.save(facility, safe=True)
 
 
 def save_inspection(inspection):
     if STORING_TO_MONGO:
         inspection['date'] = datetime.datetime.combine(inspection['date'],
                                               datetime.time())
-        inspections.save(inspection)
+        inspections.save(inspection, safe=True)
 
 
 def save_violation(violation):
     if STORING_TO_MONGO:
-        violations.save(violation)
+        violations.save(violation, safe=True)

@@ -22,12 +22,12 @@ PAGE_SIZE = 20
 SECONDS_THROTTLE = 10
 
 SEARCH_PARAMS = {'startrow': 1,
+               'maxrows': PAGE_SIZE,
                'source': 'quick',
                'precision': 'LIKE',
                'startDate': '01-07-2011',
                'endDate': '01-07-2012',
                'establishmentClass': 'ANY',
-               'maxrows': PAGE_SIZE,
                'filter': 'est',
                'Search': 'Search'}
 
@@ -74,7 +74,7 @@ def scrape_facility(facility_url):
                                  (facility.get('location', ''),
                                   facility.get('name', '')))
         print "facility: %s" % facility
-        save_facility(facility)
+        facility['id'] = save_facility(facility)
         return facility, facility_resp
     except:
             logger.exception("Could not scrape facility %s" %
@@ -85,6 +85,8 @@ def scrape_inspection(inspection_url, facility):
     try:
         inspection = {}
         inspection['facility'] = facility['_id']
+        if 'id' in facility:
+            inspection['facility_id'] = facility['id']
         inspection['_id'] = inspection_url
         inspection['url'] = inspection_url
         inspection_resp = requests.get(inspection['url'])
@@ -170,7 +172,7 @@ def scrape_inspections(startrow):
                                       facility.get('name', '')))
 
             print "facility: %s" % facility
-            save_facility(facility)
+            facility['id'] = save_facility(facility)
     except:
         logger.exception("Could not scrape at startrow: %s" % startrow)
 
