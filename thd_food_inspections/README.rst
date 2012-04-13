@@ -101,3 +101,15 @@ MongoDB
 
 .. _MongoDB: http://www.mongodb.org/
 .. _MongoHQ: https://mongohq.com/
+
+WYMI
+----
+
+#. Set environment variables::
+
+   export WYMI_API_HOST=http://whereyourmouth.is
+   export WYMI_API_ROOT=/api/v1
+   export WYMI_USERNAME=username*
+   export WYMI_API_KEY=apikey*
+
+Note: For now, contact groovecoder to get a WYMI username and api key
