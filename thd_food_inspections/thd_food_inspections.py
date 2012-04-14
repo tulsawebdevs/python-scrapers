@@ -124,8 +124,9 @@ def scrape_violations(inspection_page_content, inspection):
         violation_type = pq(violation_type_link).attr('href')
         m = re.search('info.cfm\?.*#(?P<type>.*)', violation_type)
         violation_type = m.group('type')
-        violations = pq(violationTypeEl).siblings('ol')[counter]
-        for violationEl in violations:
+        violationEls = pq(violationTypeEl).siblings('ol')[counter]
+        violations = []
+        for violationEl in violationEls:
             violation = {}
             violation['inspection'] = inspection['_id']
             violation['type'] = violation_type
@@ -137,7 +138,9 @@ def scrape_violations(inspection_page_content, inspection):
                                                food_code).hexdigest()
                 violation['comments'] = violationObj.text()
                 print "violation: %s" % violation
+                violations.append(violation)
                 save_violation(violation)
+    return violations
 
 def scrape_inspections(startrow):
     try:
@@ -157,7 +160,8 @@ def scrape_inspections(startrow):
                 inspection, inspection_resp = scrape_inspection(inspection_url,
                                                                 facility)
 
-                scrape_violations(inspection_resp.content, inspection)
+                violations = scrape_violations(inspection_resp.content,
+                                               inspection)
                 time.sleep(SECONDS_THROTTLE)
 
             if 'MAPQUEST_API_KEY' in os.environ:

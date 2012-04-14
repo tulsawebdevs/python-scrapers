@@ -13,6 +13,7 @@ if 'WYMI_API_KEY' in os.environ:
     WYMI_API_ROOT = os.environ['WYMI_API_ROOT']
     WYMI_USERNAME = os.environ['WYMI_USERNAME']
     if WYMI_API_KEY and WYMI_API_HOST and WYMI_API_ROOT and WYMI_USERNAME:
+        WYMI_API = "http://" + WYMI_API_HOST + WYMI_API_ROOT
         STORING_TO_WYMI = True
         print "Storing to wymi"
     else:
@@ -22,7 +23,6 @@ if 'WYMI_API_KEY' in os.environ:
 
 def save_facility(facility):
     if STORING_TO_WYMI:
-        WYMI = WYMI_API_HOST + WYMI_API_ROOT
         # check for existing record
         check_params = {
             'username': WYMI_USERNAME,
@@ -30,11 +30,12 @@ def save_facility(facility):
             'name': facility['name'],
             'address': facility['location'],
         }
-        check_url = "http://%s/facility/?%s" % (WYMI, urlencode(check_params))
+        check_url = "%s/facility/?%s" % (WYMI_API, urlencode(check_params))
         results_resp = requests.get(check_url)
         if results_resp.status_code == 200:
             results = json.loads(results_resp.content)
-            facility['id'] = results['objects'][0]['id']
+            if results['meta']['total_count'] > 0:
+                facility['id'] = results['objects'][0]['id']
         req_data = {
             'name': facility['name'],
             'address': facility['location'],
@@ -49,9 +50,8 @@ def save_facility(facility):
         # TODO refactor into build_wymi_url
         if 'id' in facility:
             facility_token = '%s/' % facility['id']
-        wymi_url = "http://%s%s/facility/%s?username=%s&api_key=%s" % (
-            WYMI_API_HOST, WYMI_API_ROOT, facility_token, WYMI_USERNAME,
-            WYMI_API_KEY)
+        wymi_url = "%s/facility/%s?username=%s&api_key=%s" % (
+            WYMI_API, facility_token, WYMI_USERNAME, WYMI_API_KEY)
         req_content = json.dumps(req_data)
         req_headers = {"content-type": "application/json"}
         if 'id' in facility:
@@ -65,10 +65,25 @@ def save_facility(facility):
 
 def save_inspection(inspection):
     if STORING_TO_WYMI:
+        inspection_date = inspection['date'].strftime('%Y-%m-%d')
+        check_params = {
+            'username': WYMI_USERNAME,
+            'api_key': WYMI_API_KEY,
+            'facility': inspection['facility_id'],
+            'date': inspection_date,
+        }
+        check_url = "%s/inspection/?%s" % (WYMI_API, urlencode(check_params))
+        import pdb; pdb.set_trace()
+        results_resp = requests.get(check_url)
+        if results_resp.status_code == 200:
+            results = json.loads(results_resp.content)
+            if results['meta']['total_count'] > 0:
+                inspection['id'] = results['objects'][0]['id']
+        facility_resource_id = "%s/facility/%s/" % (WYMI_API_ROOT,
+                                                    inspection['facility_id'])
         req_data = {
-            'facility': "%s/facility/%s/" % (WYMI_API_ROOT,
-                                             inspection['facility_id']),
-            'date': inspection['date'].strftime('%Y-%m-%d'),
+            'facility': facility_resource_id,
+            'date': inspection_date,
             'score': '-1',
             'type': inspection['purpose']
         }
@@ -76,9 +91,8 @@ def save_inspection(inspection):
         inspection_token = ''
         if 'id' in inspection:
             inspection_token = '%s/' % inspection['id']
-        wymi_url = "http://%s%s/inspection/%s?username=%s&api_key=%s" % (
-            WYMI_API_HOST, WYMI_API_ROOT, inspection_token, WYMI_USERNAME,
-            WYMI_API_KEY)
+        wymi_url = "%s/inspection/%s?username=%s&api_key=%s" % ( WYMI_API,
+            inspection_token, WYMI_USERNAME, WYMI_API_KEY)
         req_content = json.dumps(req_data)
         req_headers = {"content-type": "application/json"}
         if 'id' in inspection:
