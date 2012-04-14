@@ -2,6 +2,7 @@ import json
 import os
 import string
 import urlparse
+from urllib import urlencode
 
 import requests
 
@@ -21,6 +22,19 @@ if 'WYMI_API_KEY' in os.environ:
 
 def save_facility(facility):
     if STORING_TO_WYMI:
+        WYMI = WYMI_API_HOST + WYMI_API_ROOT
+        # check for existing record
+        check_params = {
+            'username': WYMI_USERNAME,
+            'api_key': WYMI_API_KEY,
+            'name': facility['name'],
+            'address': facility['location'],
+        }
+        check_url = "http://%s/facility/?%s" % (WYMI, urlencode(check_params))
+        results_resp = requests.get(check_url)
+        if results_resp.status_code == 200:
+            results = json.loads(results_resp.content)
+            facility['id'] = results['objects'][0]['id']
         req_data = {
             'name': facility['name'],
             'address': facility['location'],
