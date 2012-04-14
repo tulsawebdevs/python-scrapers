@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 THD_ROOT = 'http://tulsa.ok.gegov.com/tulsa'
 PAGE_SIZE = 20
-SECONDS_THROTTLE = 10
+SECONDS_THROTTLE = 3
 
 SEARCH_PARAMS = {'startrow': 1,
                'maxrows': PAGE_SIZE,
@@ -108,7 +108,7 @@ def scrape_inspection(inspection_url, facility):
                 inspection['actions'] = value
 
         print "inspection: %s" % inspection
-        save_inspection(inspection)
+        inspection['id'] = save_inspection(inspection)
         return inspection, inspection_resp
     except:
         logger.exception("Could not scrape inspection %s" %
@@ -188,7 +188,7 @@ def main(argv=None):
     doc = pq(search_resp.content)
     resultsHeader = pq(doc).find('#searchResultsHeader')
     total_results = pq(resultsHeader.find('strong')[2]).text()
-    total_results = 1
+    total_results = 5
     print "Total Results: %s " % total_results
     for startrow in range(1, int(total_results) + PAGE_SIZE, PAGE_SIZE):
         print "Scraping from %s to %s" % (startrow, startrow + PAGE_SIZE)

@@ -27,19 +27,20 @@ def save_facility(facility):
             'city': 'Tulsa',
             'state': 'OK',
             'type': facility['type'],
-            'zip_code': ''
+            'zip_code': '',
+            'latitude': "%.8g" % facility['latitude'],
+            'longitude': "%.8g" % facility['longitude'],
         }
         facility_token = ''
         # TODO refactor into build_wymi_url
-        if id in facility:
+        if 'id' in facility:
             facility_token = '%s/' % facility['id']
         wymi_url = "http://%s%s/facility/%s?username=%s&api_key=%s" % (
             WYMI_API_HOST, WYMI_API_ROOT, facility_token, WYMI_USERNAME,
             WYMI_API_KEY)
         req_content = json.dumps(req_data)
         req_headers = {"content-type": "application/json"}
-        if id in facility:
-            import pdb; pdb.set_trace()
+        if 'id' in facility:
             requests.put(wymi_url, req_content, headers=req_headers)
             return facility['id']
         else:
@@ -59,15 +60,14 @@ def save_inspection(inspection):
         }
         # TODO refactor into build_wymi_url
         inspection_token = ''
-        if id in inspection:
+        if 'id' in inspection:
             inspection_token = '%s/' % inspection['id']
         wymi_url = "http://%s%s/inspection/%s?username=%s&api_key=%s" % (
             WYMI_API_HOST, WYMI_API_ROOT, inspection_token, WYMI_USERNAME,
             WYMI_API_KEY)
         req_content = json.dumps(req_data)
         req_headers = {"content-type": "application/json"}
-        if id in inspection:
-            import pdb; pdb.set_trace()
+        if 'id' in inspection:
             requests.put(wymi_url, req_content, headers=req_headers)
             return inspection['id']
         else:
@@ -78,11 +78,34 @@ def save_inspection(inspection):
 
 def save_violation(violation):
     if STORING_TO_WYMI:
-        pass
+        req_data = {
+            'inspection': "%s/inspection/%s/" % (WYMI_API_ROOT,
+                                             violation['inspection_id']),
+            'type': violation['type'],
+            'details': violation['comments'],
+        }
+        # TODO refactor into build_wymi_url
+        violation_token = ''
+        if 'id' in violation:
+            violation_token = '%s/' % violation['id']
+        wymi_url = "http://%s%s/violation/%s?username=%s&api_key=%s" % (
+            WYMI_API_HOST, WYMI_API_ROOT, violation_token, WYMI_USERNAME,
+            WYMI_API_KEY)
+        req_content = json.dumps(req_data)
+        req_headers = {"content-type": "application/json"}
+        try:
+            if 'id' in violation:
+                requests.put(wymi_url, req_content, headers=req_headers)
+                return violation['id']
+            else:
+                resp = requests.post(wymi_url, req_content, headers=req_headers)
+                violation_id = parse_id_from_location(resp.headers['location'])
+                return violation_id
+        except:
+            pass
 
 
 def parse_id_from_location(location):
     parts = urlparse.urlparse(location)
     id = string.split(string.strip(parts.path, '/'), '/')[-1]
     return id
-
