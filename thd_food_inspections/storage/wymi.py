@@ -107,7 +107,7 @@ def save_violation(violation):
     if STORING_TO_WYMI:
         req_data = {
             'inspection': "%s/inspection/%s/" % (WYMI_API_ROOT,
-                                             violation['inspection_id']),
+                                             violation['inspection']['id']),
             'type': violation['type'],
             'details': violation['comments'],
         }

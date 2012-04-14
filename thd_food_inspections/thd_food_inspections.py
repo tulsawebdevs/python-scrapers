@@ -128,7 +128,7 @@ def scrape_violations(inspection_page_content, inspection):
         violations = []
         for violationEl in violationEls:
             violation = {}
-            violation['inspection'] = inspection['_id']
+            violation['inspection'] = inspection
             violation['type'] = violation_type
             violationObj = pq(violationEl)
             food_code = violationObj.attr('value')
