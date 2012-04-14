@@ -73,7 +73,6 @@ def save_inspection(inspection):
             'date': inspection_date,
         }
         check_url = "%s/inspection/?%s" % (WYMI_API, urlencode(check_params))
-        import pdb; pdb.set_trace()
         results_resp = requests.get(check_url)
         if results_resp.status_code == 200:
             results = json.loads(results_resp.content)
