@@ -173,8 +173,7 @@ def scrape_inspections(startrow):
                 inspection_url = THD_ROOT + '/' + pq(i_link).attr('href')
                 inspection, inspection_resp = scrape_inspection(inspection_url,
                                                                 facility)
-
-                violations = scrape_violations(inspection_resp.content,
+                scrape_violations(inspection_resp.content,
                                                inspection)
                 time.sleep(SECONDS_THROTTLE)
 
@@ -199,13 +198,16 @@ def scrape_inspections(startrow):
 def main(argv=None):
     if argv is None:
         argv = sys.argv
-    index_url = THD_ROOT + '/index.cfm'
-    print "Starting with url %s" % index_url
-    print "POST params %s" % SEARCH_PARAMS
-    search_resp = requests.post(index_url, data=SEARCH_PARAMS)
-    doc = pq(search_resp.content)
-    resultsHeader = pq(doc).find('#searchResultsHeader')
-    total_results = pq(resultsHeader.find('strong')[2]).text()
+    if "MAX_RESULTS" in os.environ:
+        total_results = os.environ['MAX_RESULTS']
+    else:
+        index_url = THD_ROOT + '/index.cfm'
+        print "Starting with url %s" % index_url
+        print "POST params %s" % SEARCH_PARAMS
+        search_resp = requests.post(index_url, data=SEARCH_PARAMS)
+        doc = pq(search_resp.content)
+        resultsHeader = pq(doc).find('#searchResultsHeader')
+        total_results = pq(resultsHeader.find('strong')[2]).text()
     print "Total Results: %s " % total_results
     for startrow in range(1, int(total_results) + PAGE_SIZE, PAGE_SIZE):
         print "Scraping from %s to %s" % (startrow, startrow + PAGE_SIZE)
