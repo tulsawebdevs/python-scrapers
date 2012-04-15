@@ -80,10 +80,13 @@ def save_inspection(inspection):
                 inspection['id'] = results['objects'][0]['id']
         facility_resource_id = "%s/facility/%s/" % (WYMI_API_ROOT,
                                                     inspection['facility_id'])
+        score = -1
+        if 'score' in inspection:
+            score = inspection['score']
         req_data = {
             'facility': facility_resource_id,
             'date': inspection_date,
-            'score': '-1',
+            'score': score,
             'type': inspection['purpose']
         }
         # TODO refactor into build_wymi_url
@@ -105,11 +108,24 @@ def save_inspection(inspection):
 
 def save_violation(violation):
     if STORING_TO_WYMI:
+        check_params = {
+            'username': WYMI_USERNAME,
+            'api_key': WYMI_API_KEY,
+            'inspection': violation['inspection']['id'],
+            'code': violation['food_code'],
+        }
+        check_url = "%s/violation/?%s" % (WYMI_API, urlencode(check_params))
+        results_resp = requests.get(check_url)
+        if results_resp.status_code == 200:
+            results = json.loads(results_resp.content)
+            if results['meta']['total_count'] > 0:
+                violation['id'] = results['objects'][0]['id']
         req_data = {
             'inspection': "%s/inspection/%s/" % (WYMI_API_ROOT,
                                              violation['inspection']['id']),
             'type': violation['type'],
             'details': violation['comments'],
+            'code': violation['food_code'],
         }
         # TODO refactor into build_wymi_url
         violation_token = ''

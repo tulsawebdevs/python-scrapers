@@ -119,13 +119,13 @@ def scrape_inspection(inspection_url, facility):
 def scrape_violations(inspection_page_content, inspection):
     doc = pq(inspection_page_content)
     violationTypes = doc.find('div#violationTypes')
+    violations = []
     for (counter, violationTypeEl) in enumerate(violationTypes):
         violation_type_link = pq(violationTypeEl).children('a')[0]
         violation_type = pq(violation_type_link).attr('href')
         m = re.search('info.cfm\?.*#(?P<type>.*)', violation_type)
         violation_type = m.group('type')
         violationEls = pq(violationTypeEl).siblings('ol')[counter]
-        violations = []
         for violationEl in violationEls:
             violation = {}
             violation['inspection'] = inspection
@@ -140,6 +140,17 @@ def scrape_violations(inspection_page_content, inspection):
                 print "violation: %s" % violation
                 violations.append(violation)
                 save_violation(violation)
+    score = 100
+    for violation in violations:
+        print violation['type'] + " " + str(score)
+        if violation['type'] == 'CDC':
+            score = score - 14
+        elif violation['type'] == 'Other':
+            score = score - 6
+        elif violation['type'] == 'General':
+            score = score - 2
+    inspection['score'] = score
+    save_inspection(inspection)
     return violations
 
 def scrape_inspections(startrow):
@@ -192,7 +203,6 @@ def main(argv=None):
     doc = pq(search_resp.content)
     resultsHeader = pq(doc).find('#searchResultsHeader')
     total_results = pq(resultsHeader.find('strong')[2]).text()
-    total_results = 5
     print "Total Results: %s " % total_results
     for startrow in range(1, int(total_results) + PAGE_SIZE, PAGE_SIZE):
         print "Scraping from %s to %s" % (startrow, startrow + PAGE_SIZE)
