@@ -20,6 +20,9 @@ logger = logging.getLogger(__name__)
 THD_ROOT = 'http://tulsa.ok.gegov.com/tulsa'
 PAGE_SIZE = 20
 SECONDS_THROTTLE = 3
+if 'SECONDS_THROTTLE' in os.environ:
+    SECONDS_THROTTLE = os.environ['SECONDS_THROTTLE']
+
 
 SEARCH_PARAMS = {'startrow': 1,
                'maxrows': PAGE_SIZE,
