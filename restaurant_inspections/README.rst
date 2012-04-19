@@ -1,6 +1,6 @@
-==============================================
-Tulsa Health Department Restaurant Inspections
-==============================================
+======================
+Restaurant Inspections
+======================
 
 Run
 ===
@@ -11,7 +11,7 @@ Activate virtualenv::
 
 Adjust settings as needed::
 
-    vim thd_food_inspections/thd_food_inspections.py
+    vim restaurant_inspections/tulsa.py
 
     PAGE_SIZE = 20
     SECONDS_THROTTLE = 10
@@ -27,7 +27,7 @@ Adjust settings as needed::
     
 Run scraper::
 
-    python thd_food_inspections/thd_food_inspections.py
+    python restaurant_inspections/tulsa.py
 
 Heroku
 ------
@@ -51,9 +51,9 @@ Heroku
 
 #. run::
 
-    heroku run python thd_food_inspections/thd_food_inspections.py
+    heroku run python restaurant_inspections/tulsa.py
 
-Note: Heroku cannot store files; using Cloudant and/or mongolab is suggested.
+Note: Heroku cannot store files; using Cloudant and/or mongohq is suggested.
 (See below)
 
 .. _Heroku: http://heroku.com
