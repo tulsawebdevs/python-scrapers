@@ -5,6 +5,7 @@ pep8
 # scraping libraries
 requests
 pyquery
+beautifulsoup4
 
 # parsing/transforming/services libraries
 python-dateutil==1.5

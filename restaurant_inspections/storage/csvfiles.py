@@ -46,13 +46,17 @@ def ascii_values(dictionary):
     return new_dictionary
 
 
-def save_facility(facility):
-    if STORING_TO_CSV:
-        try:
-            facilities_writer.writerow(ascii_values(facility))
-            facilities_file.flush()
-        except:
-            logger.exception("Error writing facility: %s" % facility['_id'])
+def get_csv_writer(filename, fields):
+    csv_file = open(filename, 'wb')
+    csv_writer = csv.DictWriter(csv_file, fields)
+    writeheader(csv_writer)
+    return csv_writer
+
+def save_facility(csv_writer, facility):
+    try:
+        csv_writer.writerow(facility)
+    except:
+        logger.exception("Error writing facility: %s" % facility['_id'])
 
 
 def save_inspection(inspection):
