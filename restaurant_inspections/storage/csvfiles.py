@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 # HACK: 2.6 doesn't have DictWriter.writeheader() method :(
 def writeheader(csv_writer):
-    csv_writer.writerow(dict((field,field)
+    csv_writer.writerow(dict((field, field)
                              for field in csv_writer.fieldnames))
 
 
@@ -40,6 +40,7 @@ def strip_value(string):
     else:
         return string
 
+
 def ascii_values(dictionary):
     new_dictionary = {}
     for key, value in dictionary.items():
@@ -57,6 +58,7 @@ def get_csv_writer(filename, fields):
     csv_writer = csv.DictWriter(csv_file, fields)
     writeheader(csv_writer)
     return csv_writer
+
 
 def save_facility(csv_writer, facility):
     try:

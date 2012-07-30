@@ -27,12 +27,12 @@ def main(argv=None):
 
     print "Starting with url %s" % URL_ROOT
     print "POST params %s" % SEARCH_PARAMS
-    resp = requests.post("%s%s" % (URL_ROOT,'SearchScoresAction.cfm'),
+    resp = requests.post("%s%s" % (URL_ROOT, 'SearchScoresAction.cfm'),
                                           data=SEARCH_PARAMS)
     soup = BeautifulSoup(resp.content)
     body = soup.find('body')
 
-    resultsHeader = body.find('span', {'class':'style14'}).text
+    resultsHeader = body.find('span', {'class': 'style14'}).text
     m = re.search('Found (?P<count>\d+) records', resultsHeader)
     total_results = m.group('count').strip()
     print "Total Results: %s " % total_results
@@ -51,7 +51,7 @@ def check_for_next_page(body, cookies, csv_writer):
 
 
 def get_next_page(next_uri, cookies, csv_writer):
-    resp = requests.get("%s%s" % (URL_ROOT,next_uri), cookies=cookies)
+    resp = requests.get("%s%s" % (URL_ROOT, next_uri), cookies=cookies)
     soup = BeautifulSoup(resp.content)
     body = soup.find('body')
     cursor = body.find_all('p', {'class': 'style14'})[1].text
@@ -59,6 +59,7 @@ def get_next_page(next_uri, cookies, csv_writer):
     data_table = body.find_all('table')[1]
     write_data_table(data_table, csv_writer)
     check_for_next_page(body, cookies, csv_writer)
+
 
 def write_data_table(data_table, csv_writer):
     for data_row in data_table.find_all('tr'):
