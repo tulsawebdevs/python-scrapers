@@ -7,15 +7,15 @@ import sys
 from bs4 import BeautifulSoup
 import requests
 
-from storage.csvfiles import get_csv_writer
+from storage.csvfiles import get_csv_writer, ascii_values, strip_value
 
 logging.basicConfig(filename="scraping_errors.log")
 logger = logging.getLogger(__name__)
 
 URL_ROOT = 'http://www.austintexas.gov/health/restaurant/scores.cfm'
 
-SEARCH_PARAMS = {'begdate': '01/01/2012',
-                 'enddate': '02/01/2012',
+SEARCH_PARAMS = {'begdate': '07/01/2011',
+                 'enddate': '08/01/2012',
                  'selpara': '',
                  'estabname': None,
                  'estabcity': 'All',
@@ -45,17 +45,17 @@ def main(argv=None):
             continue
         cells = data_row.find_all('td')
         facility = {}
-        facility['name'] = cells[0].string.strip()
-        facility['location'] = cells[1].string.strip()
+        facility['name'] = strip_value(cells[0].string)
+        facility['location'] = strip_value(cells[1].string)
         facility['url'] = "%s#%s@%s" % (URL_ROOT,
                                      facility['name'],
                                      facility['location'])
-        facility['city'] = cells[2].string.strip()
-        facility['zip'] = cells[3].string.strip()
-        facility['date'] = cells[4].string.strip()
-        facility['score'] = cells[5].string.strip()
+        facility['city'] = 'Austin'
+        facility['zip'] = strip_value(cells[3].string)
+        facility['date'] = strip_value(cells[4].string)
+        facility['score'] = strip_value(cells[5].string)
         print "Facility: %s" % facility
-        csv_writer.writerow(facility)
+        csv_writer.writerow(ascii_values(facility))
 
 
 if __name__ == "__main__":

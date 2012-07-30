@@ -34,6 +34,12 @@ if 'STORE_TO_CSV' in os.environ:
     print "Storing to csv"
 
 
+def strip_value(string):
+    if getattr(string, 'strip', False):
+        return string.strip()
+    else:
+        return string
+
 def ascii_values(dictionary):
     new_dictionary = {}
     for key, value in dictionary.items():
