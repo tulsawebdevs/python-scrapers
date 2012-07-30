@@ -34,23 +34,16 @@ if 'STORE_TO_CSV' in os.environ:
     print "Storing to csv"
 
 
-def strip_value(string):
-    if getattr(string, 'strip', False):
-        return string.strip()
+def get_value(soup_bit):
+    # first remove any ascii-incompatible characters
+    if soup_bit.string:
+        value = ''.join([x for x in soup_bit.string if ord(x) < 128])
     else:
-        return string
+        value = ''
+    # now cast to string and strip whitespace
+    value = str(value).strip()
+    return value
 
-
-def ascii_values(dictionary):
-    new_dictionary = {}
-    for key, value in dictionary.items():
-        if type(value) is str:
-            # TODO: better handling of non-ascii characters
-            for x in value:
-                if ord(x) > 128:
-                    print "Found non-ascii character %s" % x
-            new_dictionary[key] = ''.join([x for x in value if ord(x) < 128])
-    return new_dictionary
 
 
 def get_csv_writer(filename, fields):

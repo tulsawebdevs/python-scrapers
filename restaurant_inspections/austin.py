@@ -1,13 +1,11 @@
-'''Scrape www.tulsa-health.org/food-safety/restaurant-inspections'''
 import logging
-import os
 import re
 import sys
 
 from bs4 import BeautifulSoup
 import requests
 
-from storage.csvfiles import get_csv_writer, ascii_values, strip_value
+from storage.csvfiles import get_csv_writer, get_value
 
 logging.basicConfig(filename="scraping_errors.log")
 logger = logging.getLogger(__name__)
@@ -45,17 +43,17 @@ def main(argv=None):
             continue
         cells = data_row.find_all('td')
         facility = {}
-        facility['name'] = strip_value(cells[0].string)
-        facility['location'] = strip_value(cells[1].string)
+        facility['name'] = get_value(cells[0])
+        facility['location'] = get_value(cells[1])
         facility['url'] = "%s#%s@%s" % (URL_ROOT,
                                      facility['name'],
                                      facility['location'])
         facility['city'] = 'Austin'
-        facility['zip'] = strip_value(cells[3].string)
-        facility['date'] = strip_value(cells[4].string)
-        facility['score'] = strip_value(cells[5].string)
+        facility['zip'] = get_value(cells[3])
+        facility['date'] = get_value(cells[4])
+        facility['score'] = get_value(cells[5])
         print "Facility: %s" % facility
-        csv_writer.writerow(ascii_values(facility))
+        csv_writer.writerow(facility)
 
 
 if __name__ == "__main__":

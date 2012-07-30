@@ -1,4 +1,3 @@
-'''Scrape www.tulsa-health.org/food-safety/restaurant-inspections'''
 import logging
 import re
 import sys
@@ -6,7 +5,7 @@ import sys
 from bs4 import BeautifulSoup
 import requests
 
-from storage.csvfiles import get_csv_writer
+from storage.csvfiles import get_csv_writer, get_value
 
 logging.basicConfig(filename="scraping_errors.log")
 logger = logging.getLogger(__name__)
@@ -47,7 +46,7 @@ def check_for_next_page(body, cookies, csv_writer):
     next_cell = pagination_table.find_all('td')[2]
     if next_cell.text.strip() == u'Next':
         next_uri = next_cell.a['href']
-    get_next_page(next_uri, cookies, csv_writer)
+        get_next_page(next_uri, cookies, csv_writer)
 
 
 def get_next_page(next_uri, cookies, csv_writer):
@@ -67,15 +66,15 @@ def write_data_table(data_table, csv_writer):
             continue
         cells = data_row.find_all('td')
         facility = {}
-        facility['name'] = cells[0].string.strip()
-        facility['location'] = cells[1].string.strip()
+        facility['name'] = get_value(cells[0])
+        facility['location'] = get_value(cells[1])
         facility['url'] = "%s#%s@%s" % (URL_ROOT,
                                      facility['name'],
                                      facility['location'])
         facility['city'] = 'Dallas'
-        facility['zip'] = cells[3].string.strip()
-        facility['date'] = cells[5].string.strip()
-        facility['score'] = cells[6].string.strip()
+        facility['zip'] = get_value(cells[3])
+        facility['date'] = get_value(cells[5])
+        facility['score'] = get_value(cells[6])
         print "Facility: %s" % facility
         csv_writer.writerow(facility)
 
