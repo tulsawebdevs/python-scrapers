@@ -24,6 +24,9 @@ Adjust settings as needed::
                    'endDate': '01-07-2012',
                    ...
                    }
+
+Note: startDate and endDate apparently have no affect for Tulsa; all records
+come back anyway
     
 Run scraper::
 
@@ -61,55 +64,4 @@ Note: Heroku cannot store files; using Cloudant and/or mongohq is suggested.
 Store
 =====
 
-You can store the data to a number of destinations by setting environment
-variables.
-
-CSV Files
----------
-
-#. Set environment variable::
-
-    export STORE_TO_CSV=True
-
-Will write the data to 3 files: thd_facilities.csv, thd_inspections.csv, thd_violations.csv
-
-CouchDB
--------
-
-#. Install CouchDB_, or use Cloudant_.
-#. Create tables::
-
-    thd_facilities
-    thd_inspections
-    thd_violations
-
-#. Set environment variable::
-
-    export COUCHDB_URL=https://user:pass@localhost
-
-.. _CouchDB: http://wiki.apache.org/couchdb/Installation
-.. _Cloudant: https://cloudant.com/
-
-MongoDB
--------
-
-#. Install MongoDB_, or use MongoHQ_ (run by a Tulsa expatriate!).
-#. Set environment variable::
-
-    export MONGODB_URI=mongodb://user:pass@localhost:29817/database_name
-    export MONGODB_DATABASE=database_name
-
-.. _MongoDB: http://www.mongodb.org/
-.. _MongoHQ: https://mongohq.com/
-
-WYMI
-----
-
-#. Set environment variables::
-
-   export WYMI_API_HOST=http://whereyourmouth.is
-   export WYMI_API_ROOT=/api/v1
-   export WYMI_USERNAME=username*
-   export WYMI_API_KEY=apikey*
-
-Note: For now, contact groovecoder to get a WYMI username and api key
+The best way to store the data is to use the default CSV file.
