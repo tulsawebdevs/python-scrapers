@@ -52,7 +52,12 @@ def _scrape_content(content, csv_writer):
         time.sleep(SECONDS_THROTTLE)
         facility_resp = requests.get(facility_url)
         facility_soup = BeautifulSoup(facility_resp.content)
-        latest_inspection = facility_soup.find(id='inspectionHistory').ul.li
+        inspection_history = facility_soup.find(id='inspectionHistory')
+        if not getattr(inspection_history, 'ul', False):
+            continue
+        if not getattr(inspection_history.ul, 'li', False):
+            continue
+        latest_inspection = inspection_history.ul.li
         latest_inspection_link = latest_inspection.a
         inspection_url = "%s%s" % (URL_ROOT, latest_inspection_link['href'])
         time.sleep(SECONDS_THROTTLE)
