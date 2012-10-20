@@ -1,7 +1,7 @@
 import csvfiles
-import couch
-import mongo
-import wymi
+# import couch
+# import mongo
+# import wymi
 
 
 def save_facility(facility):
