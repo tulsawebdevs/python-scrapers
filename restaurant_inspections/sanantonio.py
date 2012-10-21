@@ -2,6 +2,7 @@ import logging
 import re
 import sys
 import time
+import re
 
 from bs4 import BeautifulSoup
 import requests
@@ -13,8 +14,10 @@ logger = logging.getLogger(__name__)
 
 URL_ROOT = 'http://samhd.tx.gegov.com/San Antonio/'
 PAGE_SIZE = 200
-SECONDS_THROTTLE = 1
+SECONDS_THROTTLE = 2
 
+
+DEMERIT_MULTIPLIER=3
 
 SEARCH_PARAMS = {
 '1':1,
@@ -39,83 +42,57 @@ def main(argv=None):
     print "POST params %s" % SEARCH_PARAMS
     search_resp = requests.post(search_url, data=SEARCH_PARAMS)
     soup = BeautifulSoup(search_resp.content)
-    # print(soup.prettify())
     content = soup.find('td')
-    _scrape_content(content, csv_writer)
+
+    page_links = content.find_all(href=re.compile("search"))
+
+    for page_link in page_links:
+        next_page_url = "%s%s" % (URL_ROOT, page_link['href'])
+        next_page_content = requests.get(next_page_url)
+        next_page_soup=BeautifulSoup(next_page_content.content)
+        content = next_page_soup.find('td')
+        _scrape_content(content, csv_writer)
 
 
 
 def _scrape_content(content, csv_writer):
-    # resultsHeader = content.find(id='tbody')
-    # print ' '.join([text for text in resultsHeader.stripped_strings][:-2])
 
     facility_links = content.find_all(href=re.compile("estab"))
     
     for facility_link in facility_links:
-        facility_url = "%s%s" % (URL_ROOT, facility_link['href'])
+        facility={}
+        facility['city'] = 'San Antonio'
+        
         next_b=facility_link.find('b')
         if next_b:
-            print(next_b)
-             
-        time.sleep(SECONDS_THROTTLE)
+            facility['name']=next_b.string
+
+        addr_div=facility_link.next_sibling.next_sibling.get_text().strip()        
+        addr_div=re.sub('\s\s+',' ',addr_div) #remove extra spaces
+        addr_div=re.sub('\s,+',',',addr_div)#remove space before comma
+        facility['location'] =addr_div
+        
+        m = re.search('.*(?P<zip>\d{5})$', facility['location'])
+        facility['zip'] = m.group('zip').strip()
+
+        facility_url = "%s%s" % (URL_ROOT, facility_link['href'])
+        facility['url'] = facility_url
+        
         facility_resp = requests.get(facility_url)
         facility_soup = BeautifulSoup(facility_resp.content)
-        # print facility_soup.prettify()
-    #     inspection_history = facility_soup.find(id='inspectionHistory')
-    #     if not getattr(inspection_history, 'ul', False):
-    #         continue
-    #     if not getattr(inspection_history.ul, 'li', False):
-    #         continue
-    #     latest_inspection = inspection_history.ul.li
-    #     latest_inspection_link = latest_inspection.a
-    #     inspection_url = "%s%s" % (URL_ROOT, latest_inspection_link['href'])
-    #     time.sleep(SECONDS_THROTTLE)
-    #     inspection_resp = requests.get(inspection_url)
-    #     inspection_soup = BeautifulSoup(inspection_resp.content)
-    #     inspection_detail = inspection_soup.find(id='inspectionDetail')
-    #     facility = {}
-    #     facility['name'] = get_value(inspection_detail.h3)
-    #     m = re.search('Location:  (?P<location>.*)[\r\n\t]+Smoking', inspection_detail.text)
-    #     facility['location'] = m.group('location').strip()
-    #     facility['url'] = inspection_url
-    #     facility['city'] = 'San Antonio'
-    #     m = re.search('.*(?P<zip>\d{5})$', facility['location'])
-    #     facility['zip'] = m.group('zip').strip()
-    #     inspection_info = inspection_detail.find(id='inspectionInfo')
-    #     inspection_date_row = inspection_info.table.tr
-    #     facility['date'] = get_value(inspection_date_row.find_all('td')[1])
-    #     inspection_violations = inspection_detail.find(id='inspectionViolations')
-    #     facility['score'] = _get_inspection_score(inspection_violations)
-    #     print "Facility: %s" % facility
-    #     csv_writer.writerow(facility)
-
-    next_page_link = content.find('a', text='Next %s' % PAGE_SIZE)
-    if next_page_link:
+        
+        get_first_report_date=facility_soup.find('b',text=re.compile("Date"))
+        
+        if get_first_report_date:
+            facility['date'] = get_first_report_date.next_sibling.strip()
+            get_demerits=get_first_report_date.parent.find('b',text=re.compile('Demerits'))
+            inspection_demerits=get_demerits.next_sibling.strip()
+            facility['score']=100-(DEMERIT_MULTIPLIER*int(inspection_demerits))
+        
         time.sleep(SECONDS_THROTTLE)
-        next_url = "%s%s" % (URL_ROOT, next_page_link['href'])
-        search_resp = requests.get(next_url)
-        soup = BeautifulSoup(search_resp.content)
-        content = soup.find(id='content')
-        _scrape_content(content, csv_writer)
 
-
-def _get_inspection_score(inspection_violations):
-    score = 100
-    violations = []
-    for violation_type in inspection_violations.find_all('div'):
-        v_type = violation_type.a['href']
-        m = re.search('info.cfm\?.*#(?P<type>.*)', v_type)
-        v_type = m.group('type')
-        for item in violation_type.find_next_sibling('ol').find_all('li'):
-            violations.append(v_type)
-    for violation in violations:
-        if violation == 'CDC':
-            score = score - 14
-        elif violation == 'Other':
-            score = score - 6
-        elif violation == 'General':
-            score = score - 2
-    return score
+        print "Facility: %s" % facility
+        csv_writer.writerow(facility)
 
 
 if __name__ == "__main__":
