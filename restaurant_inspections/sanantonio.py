@@ -2,7 +2,6 @@ import logging
 import re
 import sys
 import time
-import re
 
 from bs4 import BeautifulSoup
 import requests
